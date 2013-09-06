@@ -1,0 +1,10 @@
+
+django
+fabric
+south
+django-debug-toolbar
+psycopg2
+django-compressor
+django-extensions
+
+
