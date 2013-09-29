@@ -1,0 +1,7 @@
+
+django
+fabric
+south
+psycopg2
+
+
