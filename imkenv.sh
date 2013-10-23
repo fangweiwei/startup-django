@@ -14,23 +14,36 @@ fi
 
 if [ -z "$2" ]
 then
-  echo "Mising second argument which is the name of the requirements file"
+  echo "Mising second argument local/live"
   return -1
 fi
 
-ENV_NAME="$1"
-REQ_FILE="$2"
+V_ENV_NAME="$1"
+ENV=$2
+REQ_FILE="/Users/jaikirdatt/Development/Python/Django/shell/requirements/local_requirements.txt"
 TEMPLATE="/Users/jaikirdatt/Development/Python/Django/template/itemplate"
 APPTEMPLATE="/Users/jaikirdatt/Development/Python/Django/template/iapptemplate"
 
 #Create the virtual environment
-mkvirtualenv $ENV_NAME --no-site-packages
+mkvirtualenv $V_ENV_NAME --no-site-packages
 
 #workon the newly created environment
-workon $ENV_NAME
+workon $V_ENV_NAME
 
-#install requirements
-pip install -r $REQ_FILE
+if [ "$ENV" = 'local' ]
+then
+  #install requirements
+  pip install -r $REQ_FILE
+fi
+
+if [ "$ENV" = 'live' ]
+then
+  
+  #install live requirements
+  REQ_FILE="/Users/jaikirdatt/Development/Python/Django/shell/requirements/live_requirements.txt"
+  pip install -r $REQ_FILE
+fi
+
 
 echo "Enter 'Y' to create your django project here:"
 pwd
@@ -38,10 +51,36 @@ read answer
 
 if [ "$answer" = 'Y' ]
 then
+
+  #Create a directory for the project
   mkdir "$1"_project
+
+  #Create the django project
   django-admin.py startproject "$1" --template=$TEMPLATE "$1"_project
+  
+  #Create the django app
   cd "$1"_project/"$1"
   python manage.py startapp "$1"app --template=$APPTEMPLATE
+  
+  #So we can run ./manage.py
+  chmod 777 manage.py
+
+  #init git
+  cd ..
+  git init
+  
+  #add and commit initial files
+  git add *
+  git commit -m "Initial commit"
+
+  #Create postgres user
+  echo "Creating a new postgres superuser:" $1
+  createuser "$1" --superuser --pwprompt
+
+  #Create a new database
+  createdb "$1" --owner "$1"
+  echo "postgres database created:" $1
+
 fi
 
 
